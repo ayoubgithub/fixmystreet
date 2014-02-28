@@ -79,6 +79,10 @@ requires 'XML::RSS';
 requires 'XML::Simple';
 requires 'YAML';
 
+# Modules used by css watcher
+requires 'File::ChangeNotify';
+requires 'Path::Tiny';
+
 # Modules used by the test suite
 requires 'CGI::Simple';
 requires 'HTTP::Headers';

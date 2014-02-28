@@ -1,0 +1,57 @@
+#!/usr/bin/env perl
+use strict;
+use warnings;
+use feature 'say';
+use File::ChangeNotify;
+use Path::Tiny;
+ 
+my @exts = qw/
+    scss
+/;
+
+my @dirs = qw/
+    web
+/;
+ 
+my $filter = do {
+    my $exts = join '|', @exts;
+    qr/\.(?:$exts)$/ };
+
+my $watcher = File::ChangeNotify->instantiate_watcher(
+    directories => \@dirs,
+    filter => $filter,
+);
+
+sub title {
+    my $what = shift;
+    # TODO, check if xtitle is installed and if so, run following command:
+    # system 'xtitle', $what;
+}
+ 
+say sprintf "Watching [%s] for %s", (join ',' => @dirs), $filter;
+title 'watching';
+ 
+while ( my @events = $watcher->wait_for_events() ) {
+    my %seen;
+    title 'updating';
+    for my $event (@events) {
+        my $file = path( $event->path );
+        say "$file was updated...";
+        my $dir = $file->dirname;
+        next if $seen{$dir}++;
+        if (-e "$dir/config.rb") {
+            system compass => 
+                'compile',
+                '--output-style' => 'compressed',
+                $dir;
+        }
+        else {
+            system sass => 
+                '--scss',
+                '--update',
+                '--style' => 'compressed',
+                $dir;
+        }
+    }
+    title 'watching';
+}
